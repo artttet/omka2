@@ -27,9 +27,9 @@ class OmkaCardProvider{
   static int _number;
   static num _balance;
 
-  static num _loadBalance(){
+  static num _loadBalance(Map card){
     Future.delayed(Duration(seconds: 3));
-    return 125.0;
+    return card.values.toList()[4];
   }
 
   static OmkaCard _getSafeOmkaCard(Map card){
@@ -37,7 +37,7 @@ class OmkaCardProvider{
       name: card.values.toList()[1],
       type: card.values.toList()[2],
       number: card.values.toList()[3],
-      balance: _loadBalance()
+      balance: _loadBalance(card)
     ); 
   }
 

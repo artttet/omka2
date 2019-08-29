@@ -4,6 +4,8 @@ import 'package:omka2/backend/shared_prefs.dart';
 import 'package:omka2/values/colors.dart';
 import 'package:omka2/values/prefs_keys.dart';
 import 'package:omka2/values/sizes.dart';
+import 'package:http/http.dart' as http;
+import 'package:barcode_scan/barcode_scan.dart';
 
 class AddCardScreen extends StatefulWidget{
  AddCardScreen(this.updateMainCard);
@@ -20,23 +22,26 @@ class _AddCardScreenState extends State<AddCardScreen>{
   _AddCardScreenState(this.updateMainCard);
 
   final Function updateMainCard;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   TextEditingController _nameController = TextEditingController();
-  TextEditingController _typeController = TextEditingController();
-  TextEditingController _numberController = TextEditingController();
-  TextEditingController _balanceController = TextEditingController();
+
+  int cardNum;
+  String cardBalance;
+  int cardType;
+  bool isFirstScanning = true;
 
   var prefs = SharedPrefs.getPrefs();
   test(){
     updateMainCard();
     Navigator.pop(context);
   }
-  addCard(){
-    Map<String, dynamic> item = {'name' : _nameController.text, 'type' : int.parse(_typeController.text),'number' : int.parse(_numberController.text),'balance' : double.parse(_balanceController.text)};
+  addCard(){    
+    Map<String, dynamic> item = {'name' : _nameController.text, 'type' : cardType,'number' : cardNum,'balance' : cardBalance};
 
     
     prefs.setString('cardName', _nameController.text);
-    prefs.setInt('cardNumber', int.parse(_numberController.text));
+    prefs.setInt('cardNumber', cardNum);
     
     
     prefs.setBool(PrefsKey.needUpdate, true);
@@ -57,10 +62,20 @@ class _AddCardScreenState extends State<AddCardScreen>{
   Widget build(BuildContext context) {
     
     return Scaffold(
+      key: _scaffoldKey,
       resizeToAvoidBottomPadding: false,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(Sizes.appBarHeight),
         child: AppBar(
+          actions: <Widget>[
+            IconButton(icon: Icon(Icons.check), color: MyColors.red, onPressed: (){
+              if(_nameController.text != null && cardNum != null && _nameController.text != ''){
+                addCard();
+              }else{
+                showSnackBar('Не все данные введены');
+              }
+            },)
+          ],
           brightness: Brightness.light,
           title: Text(
             'Добавить карту',
@@ -84,38 +99,103 @@ class _AddCardScreenState extends State<AddCardScreen>{
       ),
       body: Column(
         children: <Widget> [
-          TextField(
-            controller: _nameController,
-            decoration: InputDecoration(
-                  hintText: 'Введите имя карты',
-                ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Имя',
+                border: OutlineInputBorder(),
+                hintText: 'Введите имя карты',
+              ),
+            ),
           ),
-          TextField(
-            controller: _numberController,
-            decoration: InputDecoration(
-                  hintText: 'Введите номер карты',
-                ),
-          ),
-          TextField(
-            controller: _typeController,
-            decoration: InputDecoration(
-                  hintText: 'Введите тип карты',
-                ),
-          ),
-          TextField(
-            controller: _balanceController,
-            decoration: InputDecoration(
-                  hintText: 'Введите баланс карты',
-                ),
-          ),
-          RaisedButton(
-            onPressed: (){
-              addCard();
-              FocusScope.of(context).requestFocus(new FocusNode());
-            },
-          )
+          getCardNumFunctions()
         ]
       ),
+    );
+  }
+
+  Widget getCardNumFunctions(){
+    if(isFirstScanning){
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: <Widget>[
+            Text('Номер: '),
+              FlatButton(
+                onPressed: (){
+                  barcodeScanning();
+                },
+                child: Text('Просканировать'),
+                textColor: Colors.blue,
+            )
+          ],
+        ),
+      );
+    }else{
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: <Widget>[
+            Text('Номер: '),
+            cardNum != null ?
+            Text('000$cardNum', style: TextStyle(color: Colors.blue))
+            :
+            CircularProgressIndicator(),
+            IconButton(icon: Icon(Icons.refresh), onPressed: (){
+              barcodeScanning();
+              setState(() {
+                cardNum = null;
+              });
+            },)
+          ],
+        ),
+      );
+    }
+  }
+
+  Future barcodeScanning() async {
+    try {
+      setState(() {
+       isFirstScanning = false; 
+      });
+      String barcode = await BarcodeScanner.scan();
+      int number = int.tryParse(barcode.substring(9, 18));
+      if(number != null){
+        final response = await http.get('http://b23d2748.ngrok.io/index.php?num=$number');
+        if(response.statusCode == 200){
+          List<String> infos = response.body.split(', ');
+          if(infos[0] != '-1'){
+            print(number);
+            setState(() {
+              cardNum = number;
+              cardBalance = infos[1].replaceAll(' т.е.', '').replaceAll('Остаток на карте: ', '');
+              cardType = int.parse(infos[0]);
+            });
+          }else{
+            showSnackBar('Неверно сканированный номер карты');
+          }
+        }else{
+          showSnackBar('Ошибка сети');
+        }
+      }
+    } catch (e) {
+      setState(() {
+       isFirstScanning = true; 
+      });
+      print(e);
+    }
+  }
+
+  showSnackBar(String value){
+    _scaffoldKey.currentState.showSnackBar(
+      SnackBar(
+        content: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(value),
+        )
+      )
     );
   }
 }

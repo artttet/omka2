@@ -32,6 +32,8 @@ dev_dependencies:
   flutter_svg:
   rounded_modal:
   url_launcher:
+  http:
+  barcode_scan:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
