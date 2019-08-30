@@ -82,6 +82,7 @@ flutter:
     - assets/svg/logo_omka_blue.svg
     - assets/svg/logo_omka_green.svg
     - assets/svg/logo.svg
+    - assets/svg/logo_omka_add.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

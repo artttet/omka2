@@ -81,7 +81,8 @@ class MyDataBase{
 
   static updateCards(int number) async{
     print('number ------ $number');
-    final response = await http.get('http://8360aea6.ngrok.io/index.php?num=$number');
+    var url = "http://8360aea6.ngrok.io/index.php?num=$number";
+    final response = await http.get(url);
     if(response.statusCode == 200){
       List<String> body = response.body.split(', ');
       num _balanceCard = num.parse(body[1].replaceAll(' т.е.', '').replaceAll('Остаток на карте: ', ''));

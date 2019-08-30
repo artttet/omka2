@@ -39,11 +39,13 @@ class ListCardsWidgetState extends State<ListCardsWidget> with SingleTickerProvi
     MyDataBase.updateList();
   }
 
+
+
   showDeleteDialog(Map card, int index){
     List CardValues(int index){
       return MyDataBase.getListCards().reversed.toList()[index].values.toList();
     }
-
+  
     showDialog(
       context: context,
       builder: (BuildContext context){
@@ -54,61 +56,8 @@ class ListCardsWidgetState extends State<ListCardsWidget> with SingleTickerProvi
           updateMainCard();
           Navigator.pop(context);
         }
-        return CheckDevice.isIos()
-          ? CupertinoAlertDialog(
-            title: Text('Вы хотите удалить карту?'),
-            actions: <Widget>[
-              CupertinoButton(
-                child: Text('Отменить', style: TextStyle(color: Colors.black)),
-                onPressed: (){
-                  Navigator.of(context).pop();
-                },
-              ),
-              CupertinoButton(
-                child: Text('Удалить'),
-                onPressed: (){
-                  MyDataBase.deleteCard(card);
-
-                  if(index > 1 && index != currentIndex){
-                    prefs.setInt(currentIndexKey, currentIndex);
-                    prefs.setString(currentIndexKey, CardValues(currentIndex)[1]);
-                    prefs.setInt(currentIndexKey, CardValues(currentIndex)[2]);
-                  } else{
-                    prefs.setInt(currentIndexKey, 0);
-                    prefs.setString(currentIndexKey, CardValues(0)[1]);
-                    prefs.setInt(currentIndexKey, CardValues(0)[2]);
-                  }
-
-                  if(index == 0){
-                    if(MyDataBase.getListCards().length > 2){
-                      prefs.setInt(currentIndexKey, 0);
-                    }else prefs.setInt(currentIndexKey, -1);
-                  }
-
-                  if(MyDataBase.getListCards().length == 2){
-                    Navigator.pushNamedAndRemoveUntil(context, '/addCardScreen', (_) => false);
-                  }else{
-                    updateMainCard();
-                  }
-                },
-              )
-            ],
-          ) 
-          : AlertDialog(
-            title: Text('Вы хотите удалить карту?', style: TextStyle(color: Colors.black),),
-            actions: <Widget>[
-              RaisedButton(
-                child: Text('Отменить', style: TextStyle(color: Colors.white),),
-                onPressed: (){
-                  Navigator.of(context).pop();
-                },
-              ),
-              RaisedButton(
-                child: Text('Удалить', style: TextStyle(color: Colors.white),),
-                onPressed: (){
-                  
-
-                  if(index > 1 && index != currentIndex){
+        delete(){
+           if(index > 1 && index != currentIndex){
                     prefs.setInt(currentIndexKey, currentIndex);
                     prefs.setString(PrefsKey.cardName, CardValues(currentIndex)[1]);
                     prefs.setInt(PrefsKey.cardType, CardValues(currentIndex)[2]);
@@ -131,6 +80,7 @@ class ListCardsWidgetState extends State<ListCardsWidget> with SingleTickerProvi
 
                   if(MyDataBase.getListCards().length == 2){
                     prefs.setBool(PrefsKey.needUpdate, true);
+                    MyDataBase.deleteCard(card);
                     Navigator.pushNamedAndRemoveUntil(context, '/needCardScreen', (_) => false);
                   }else{
                     prefs.setBool(PrefsKey.needUpdate, true);
@@ -138,7 +88,43 @@ class ListCardsWidgetState extends State<ListCardsWidget> with SingleTickerProvi
                     
                     
                     MyDataBase.deleteCard(card).then((_)=>up());
-                  }
+          }
+        }
+        
+        return CheckDevice.isIos()
+          ? CupertinoAlertDialog(
+            title: Text('Вы хотите удалить карту?'),
+            actions: <Widget>[
+              CupertinoButton(
+                child: Text('Отменить', style: TextStyle(color: Colors.black)),
+                onPressed: (){
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoButton(
+                child: Text('Удалить'),
+                onPressed: (){
+                  delete();
+                },
+              )
+            ],
+          ) 
+          : AlertDialog(
+            title: Text('Вы хотите удалить карту?', style: TextStyle(color: Colors.black),),
+            actions: <Widget>[
+              RaisedButton(
+                child: Text('Отменить', style: TextStyle(color: Colors.white),),
+                onPressed: (){
+                  Navigator.of(context).pop();
+                },
+              ),
+              RaisedButton(
+                child: Text('Удалить', style: TextStyle(color: Colors.white),),
+                onPressed: (){
+                  
+                  delete();
+                 
+                  
                 },
               )
             ],
