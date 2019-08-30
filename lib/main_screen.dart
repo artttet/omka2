@@ -36,7 +36,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
   @override
   void initState(){
     super.initState();
-    
     AnimController.initHeadlineIconController(this);
     AnimController.initListCardsController(this); 
     isGreyBackground = false;
@@ -83,6 +82,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     String _cardName;
+    List<String> _cardHistory;
     int _cardType, _cardNumber;
     num _cardBalance;
 
@@ -96,7 +96,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
       _cardType = _card.type;
       _cardNumber = _card.number;
       _cardBalance = _card.balance;
+      _cardHistory = _card.history.split(': ');
+      _cardHistory[0] = _cardHistory[0].replaceFirst('д', 'Д');
     }
+
+    MyDataBase.updateCards(_cardNumber);
+    Future.delayed(Duration(seconds: 5), (){
+      updateData();
+    });
     
     return Scaffold(
       appBar: PreferredSize(
@@ -135,6 +142,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
       actions: CheckDevice.isIos()
         ? <Widget> [
             IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: (){
+                MyDataBase.updateCards(_cardNumber);
+                Future.delayed(Duration(seconds: 5), (){
+                  updateData();
+                });
+              },
+            ),
+            IconButton(
               icon: Icon(Icons.more_horiz, color: MyColors.red,),
               onPressed: (){ 
                 _showIosAction<String>(
@@ -170,6 +186,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
           ]
         :
           <Widget>[
+            IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: (){
+                MyDataBase.updateCards(_cardNumber);
+                Future.delayed(Duration(seconds: 5), (){
+                  updateData();
+                });
+              },
+            ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert, color: MyColors.red,),
               onSelected: (value){
@@ -249,28 +274,36 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
                   },
                 ),
               ),
-              InkWell(
-                onTap: (){
-                  print('hello');
-                },
-                child: Container(
-                  height: 50.0,
-                  width: Sizes.parentWidth(context),
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(width: 0.25, color: Colors.grey))
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('История:', style: Theme.of(context).textTheme.body1),
-                        Icon(Icons.arrow_forward_ios, size: 16.0, color: Colors.black)
-                      ]
-                    )
-                  )
-                )
-              ),
+              // InkWell(
+              //   onTap: (){
+              //     print('hello');
+              //   },
+              //   child: Container(
+              //     height: 50.0,
+              //     width: Sizes.parentWidth(context),
+              //     decoration: BoxDecoration(
+              //       border: Border(bottom: BorderSide(width: 0.25, color: Colors.grey))
+              //     ),
+              //     child: Padding(
+              //       padding: EdgeInsets.symmetric(horizontal: 16.0),
+              //       child: Row(
+              //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //         children: <Widget>[
+              //           Text(_cardHistory[0], style: Theme.of(context).textTheme.body1),
+              //           Text(_cardHistory[1], style: Theme.of(context).textTheme.body1)
+              //           //Icon(Icons.arrow_forward_ios, size: 16.0, color: Colors.black)
+              //         ]
+              //       )
+              //     )
+              //   )
+              // ),
+              _card != null ?
+              ListTile(
+                title: Text(_cardHistory[0] + ':', style: Theme.of(context).textTheme.body1,),
+                subtitle: Text(_cardHistory[1]),
+              )
+              :
+              Center(),
               Spacer(),
               MainBottomSheet(
                 color: _primaryColor,

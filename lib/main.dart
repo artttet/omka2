@@ -13,11 +13,12 @@ import 'package:omka2/backend/check_device.dart';
 import 'package:omka2/values/sizes.dart';
 
 class OmkaCard{
-  OmkaCard({this.name, this.type, this.number, this.balance});
+  OmkaCard({this.name, this.type, this.number, this.balance, this.history});
   final String name;
   final int type;
   final int number;
   final double balance;
+  final String history;
 }
 
 class OmkaCardProvider{
@@ -27,17 +28,18 @@ class OmkaCardProvider{
   static int _number;
   static num _balance;
 
-  static num _loadBalance(Map card){
-    Future.delayed(Duration(seconds: 3));
-    return card.values.toList()[4];
-  }
+  // static num _loadBalance(Map card){
+  //   Future.delayed(Duration(seconds: 3));
+  //   return card.values.toList()[4];
+  // }
 
   static OmkaCard _getSafeOmkaCard(Map card){
     return OmkaCard(
       name: card.values.toList()[1],
       type: card.values.toList()[2],
       number: card.values.toList()[3],
-      balance: _loadBalance(card)
+      balance: card.values.toList()[4],
+      history: card.values.toList()[5]
     ); 
   }
 
@@ -52,7 +54,8 @@ class OmkaCardProvider{
       name: card.values.toList()[1],
       type: card.values.toList()[2],
       number: card.values.toList()[3],
-      balance: card.values.toList()[4]
+      balance: card.values.toList()[4],
+      history: card.values.toList()[5]
     );
   }
 }

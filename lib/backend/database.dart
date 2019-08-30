@@ -2,6 +2,7 @@ import 'package:omka2/backend/shared_prefs.dart';
 import 'package:omka2/values/prefs_keys.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:http/http.dart' as http;
 
 class MyDataBase{
   static const _dbTable = 'Cards';
@@ -20,9 +21,9 @@ class MyDataBase{
     _dataBase = await openDatabase(_dbPath, version: 1,
       onCreate: (Database _db, int version) async{
         await _db.execute(
-          'CREATE TABLE Cards (id INTEGER PRIMARY KEY, name TEXT, type INTEGER , number INTEGER , balance REAL)'
+          'CREATE TABLE Cards (id INTEGER PRIMARY KEY, name TEXT, type INTEGER , number INTEGER , balance REAL, history TEXT)'
         );
-        _db.insert('Cards', {'id' : 0, 'name':'Добавить', 'type': 3, 'number':111, 'balance': 222.0});
+        _db.insert('Cards', {'id' : 0, 'name':'Добавить', 'type': 3, 'number':111, 'balance': 222.0, 'history': 'Nothing'});
       }
     );
     _dataBase.close();
@@ -70,6 +71,26 @@ class MyDataBase{
     print('UPDATED LIST');
     _listCards = await dataBase.rawQuery('SELECT * FROM $_dbTable');
     dataBase.close();
+  }
+
+  static checkNumbers() async{
+    var dataBase = await openDatabase(_dbPath, version: _dbVersion);
+    List<Map> data = await dataBase.rawQuery('SELECT number FROM $_dbTable');
+    return data;
+  }
+
+  static updateCards(int number) async{
+    final response = await http.get('http://8360aea6.ngrok.io/index.php?num=$number');
+    if(response.statusCode == 200){
+      List<String> body = response.body.split(', ');
+      num _balanceCard = num.parse(body[1].replaceAll(' т.е.', '').replaceAll('Остаток на карте: ', ''));
+      String _historyCard = body[2];
+      var dataBase = await openDatabase(_dbPath, version: _dbVersion);
+      await dataBase.update(
+        _dbTable, {'balance': _balanceCard, 'history': _historyCard}, where: 'number = ?', whereArgs: [number]
+      );
+      dataBase.close();
+    }
   }
 
   static List<Map> getListCards(){

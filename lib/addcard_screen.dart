@@ -29,6 +29,7 @@ class _AddCardScreenState extends State<AddCardScreen>{
   int cardNum;
   String cardBalance;
   int cardType;
+  String cardHistory;
   bool isFirstScanning = true;
 
   var prefs = SharedPrefs.getPrefs();
@@ -37,7 +38,7 @@ class _AddCardScreenState extends State<AddCardScreen>{
     Navigator.pop(context);
   }
   addCard(){    
-    Map<String, dynamic> item = {'name' : _nameController.text, 'type' : cardType,'number' : cardNum,'balance' : cardBalance};
+    Map<String, dynamic> item = {'name' : _nameController.text, 'type' : cardType,'number' : cardNum,'balance' : cardBalance, 'history': cardHistory};
 
     
     prefs.setString('cardName', _nameController.text);
@@ -157,13 +158,15 @@ class _AddCardScreenState extends State<AddCardScreen>{
 
   Future barcodeScanning() async {
     try {
+      var checkNumbers = MyDataBase.checkNumbers();
+      print(checkNumbers);
       setState(() {
        isFirstScanning = false; 
       });
       String barcode = await BarcodeScanner.scan();
       int number = int.tryParse(barcode.substring(9, 18));
       if(number != null){
-        final response = await http.get('http://b23d2748.ngrok.io/index.php?num=$number');
+        final response = await http.get('http://8360aea6.ngrok.io/index.php?num=$number');
         if(response.statusCode == 200){
           List<String> infos = response.body.split(', ');
           if(infos[0] != '-1'){
@@ -172,15 +175,23 @@ class _AddCardScreenState extends State<AddCardScreen>{
               cardNum = number;
               cardBalance = infos[1].replaceAll(' т.е.', '').replaceAll('Остаток на карте: ', '');
               cardType = int.parse(infos[0]);
+              cardHistory = infos[2];
             });
           }else{
             showSnackBar('Неверно сканированный номер карты');
+            setState(() {
+              isFirstScanning = true;
+            });
           }
         }else{
-          showSnackBar('Ошибка сети');
+          showSnackBar('Сервер в данный момент недоступен');
+          setState(() {
+            isFirstScanning = true;
+          });
         }
       }
     } catch (e) {
+      showSnackBar('Попробуйте повторить попытку');
       setState(() {
        isFirstScanning = true; 
       });
