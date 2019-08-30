@@ -400,7 +400,7 @@ class MainCard extends StatelessWidget{
               height: Sizes.parentWidth(context) * 0.8 * 0.625 * 0.18,
               child: Center(
                 child: Text(
-                  '000$number',
+                  '000 ${number.toString().substring(0,3)} ${number.toString().substring(3,6)}',
                   style: TextStyle(
                     fontSize: 15.0,
                     color: Colors.black,

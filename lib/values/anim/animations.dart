@@ -58,7 +58,7 @@ class AnimController {
   static initListCardsController(TickerProvider provider){
     listCardsController = AnimationController(
       vsync: provider,
-      duration: Duration(milliseconds: 250)
+      duration: Duration(milliseconds: 150)
     );
   }
   static AnimationController getListCardsController(){

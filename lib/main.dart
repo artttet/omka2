@@ -101,7 +101,8 @@ class Application extends StatelessWidget {
       theme: CheckDevice.isIos() ? Themes.iosThemeData : Themes.androidThemeData,
       routes: {
         "/mainScreen" : (_) => MainScreen(),
-        "/needCardScreen" : (_) => NeedCardScreen()
+        "/needCardScreen" : (_) => NeedCardScreen(),
+        "/addCardScreen" : (_) => AddCardScreen(null)
       },
       home: SplashScreen(
         seconds: 3,

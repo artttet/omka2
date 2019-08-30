@@ -72,7 +72,7 @@ class _BigCardAnimStateG extends State<BigCardAnimG> with TickerProviderStateMix
     });
     _animation.addStatusListener((status){
       if(status == AnimationStatus.completed){
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddCardScreen(null)));
+        Navigator.pushReplacementNamed(context,  '/addCardScreen');
       }
     });
     

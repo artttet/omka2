@@ -80,6 +80,7 @@ class MyDataBase{
   }
 
   static updateCards(int number) async{
+    print('number ------ $number');
     final response = await http.get('http://8360aea6.ngrok.io/index.php?num=$number');
     if(response.statusCode == 200){
       List<String> body = response.body.split(', ');

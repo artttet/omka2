@@ -22,14 +22,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
 
   bool isGreyBackground, isBuildetCard, isListActivated;
 
-  
-    
-
   loadData() async{
-    await OmkaCardProvider.getSafeOmkaCard().then((card){
-      setState(() {
-      _card = card; 
-      });
+    MyDataBase.updateCards(SharedPrefs.getPrefs().getInt(PrefsKey.cardNumber)).then((_) =>{
+      OmkaCardProvider.getSafeOmkaCard().then(
+        (card){
+          setState(() {
+          _card = card; 
+          });
+      })
     });
   }
 
@@ -46,15 +46,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
   
   activateListCards(){
     isListActivated = true;
-    isGreyBackground = true;  
+    setState(() {
+      isGreyBackground = true;  
+    }); 
     AnimController.listCardsControllerF();
     AnimController.headlineIconControllerF();
     
   }
 
   deactivateListCards(){
+    setState(() {
+      isGreyBackground = false;  
+    });
     isListActivated = false;
-    isGreyBackground = false;  
     AnimController.listCardsControllerR();
     AnimController.headlineIconControllerR();
   }
@@ -69,15 +73,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
   updateData() async {
     deactivateListCards();
     print('UPDATED');
-    // setState(() {
-    //  _card = null; 
-    // });
-    await OmkaCardProvider.getSafeOmkaCard().then((card){
-      setState(() {
-      _card = card; 
-      });
+    MyDataBase.updateCards(SharedPrefs.getPrefs().getInt(PrefsKey.cardNumber)).then({
+      OmkaCardProvider.getSafeOmkaCard().then(
+        (card){
+          setState(() {
+          _card = card; 
+          });
+        })
     });
-  }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -99,11 +103,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
       _cardHistory = _card.history.split(': ');
       _cardHistory[0] = _cardHistory[0].replaceFirst('д', 'Д');
     }
-
-    MyDataBase.updateCards(_cardNumber);
-    Future.delayed(Duration(seconds: 5), (){
-      updateData();
-    });
     
     return Scaffold(
       appBar: PreferredSize(
@@ -259,20 +258,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget> [
                       Text('Баланс:', style: Theme.of(context).textTheme.body1),
-                      _card==null ? Center() : Text('$_cardBalance\u20bd', style: Theme.of(context).textTheme.body2)
+                      _card!=null ? Text('$_cardBalance\u20bd', style: Theme.of(context).textTheme.body2)
+                      :Container(
+                        width: 32.0,
+                        height: 10.0,
+                        decoration: BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.all(Radius.circular(6))
+                        ),
+                      ) 
                     ]
                   )
                 )
-              ),
-              Visibility(
-                visible: isGreyBackground,
-                child: GestureDetector(
-                  onTap: (){
-                    if(isListActivated){
-                      deactivateListCards();
-                    }
-                  },
-                ),
               ),
               // InkWell(
               //   onTap: (){
@@ -297,20 +294,42 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
               //     )
               //   )
               // ),
-              _card != null ?
+              
               ListTile(
-                title: Text(_cardHistory[0] + ':', style: Theme.of(context).textTheme.body1,),
-                subtitle: Text(_cardHistory[1]),
-              )
-              :
-              Center(),
+                title: Text('Дата последней транзакции:', style: Theme.of(context).textTheme.body1,),
+                subtitle: _card != null ? Text(_cardHistory[1])
+                : Container(
+                  margin: EdgeInsets.only(right: Sizes.parentWidth(context)*0.7),
+                  height: 6.0,
+                  width: 8.0,
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.all(Radius.circular(4))
+                  ),
+                ),
+              ),
               Spacer(),
               MainBottomSheet(
                 color: _primaryColor,
               )             
             ],
           ),
-          _card!=null ? ListCardsWidget(updateMainCard: this.updateData, deactivateList: this.deactivateListCards) : Center()
+          Visibility(
+              visible: isGreyBackground,
+              child: GestureDetector(
+                onTap: (){
+                  if(isListActivated){
+                    deactivateListCards();
+                  }
+                },
+                child: Container(
+                  height: Sizes.parentHeight(context),
+                  width: Sizes.parentWidth(context),
+                  decoration: BoxDecoration(color: Color.fromARGB(100, 0, 0, 0)),
+                ),
+              ),
+            ),
+            _card!=null ? ListCardsWidget(updateMainCard: this.updateData, deactivateList: this.deactivateListCards) : Center()
         ]
       )
     );
