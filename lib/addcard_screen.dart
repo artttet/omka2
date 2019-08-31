@@ -108,7 +108,8 @@ class _AddCardScreenState extends State<AddCardScreen>{
       String barcode = await BarcodeScanner.scan();
       int number = int.tryParse(barcode.substring(9, 18));
       if(number != null){
-        final response = await http.get('http://8360aea6.ngrok.io/index.php?num=$number');
+        var url = "http://192.168.43.12/index.php?num=$number";
+        final response = await http.get(url);
         if(response.statusCode == 200){
           List<String> infos = response.body.split(', ');
           if(infos[0] != '-1'){
@@ -164,7 +165,35 @@ class _AddCardScreenState extends State<AddCardScreen>{
     );
   }
 
-  
+  Widget scanButton(){
+    if(CheckDevice.isIos()){
+      return CupertinoButton(
+        color: MyColors.red,
+        onPressed: (){
+          barcodeScanning();
+        },
+        child: Text(
+          'Сканировать',
+          style: TextStyle(
+            color: Colors.white
+          ),
+        ),
+      );
+    }else{
+      return RaisedButton(
+        color: MyColors.red,
+        onPressed: (){
+          barcodeScanning();
+        },
+        child: Text(
+          'Сканировать',
+          style: TextStyle(
+            color: Colors.white
+          ),
+        ),
+      );
+    }
+  }  
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +227,7 @@ class _AddCardScreenState extends State<AddCardScreen>{
     return Scaffold(
       key: _scaffoldKey,
       resizeToAvoidBottomPadding: false,
+      backgroundColor: MyColors.red,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(Sizes.appBarHeight),
         child: AppBar(
@@ -235,17 +265,29 @@ class _AddCardScreenState extends State<AddCardScreen>{
           ],
         ),
       ),
-      body: Column(
+      body: Center(
+        child: Container(
+          width: Sizes.parentWidth(context)* 0.9,
+          height: Sizes.parentHeight(context) *0.8,
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16))
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
+          Spacer(),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0),
             child: cardNameField()
           ),
+          Spacer(),
           Center(
             child: Container(
-              margin: EdgeInsets.only(top: 8.0),
-              width: Sizes.parentWidth(context)*0.9,
-              height: Sizes.parentWidth(context) * 0.9*  0.625,
+              margin: EdgeInsets.only(top: 8.0, bottom: 48),
+              width: Sizes.parentWidth(context)*0.75,
+              height: Sizes.parentWidth(context) * 0.75*  0.625,
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(width: 0.0, color: Color(0xBDBDBDBD)),
@@ -265,22 +307,30 @@ class _AddCardScreenState extends State<AddCardScreen>{
                     left: 0,
                     child: Container(
                       padding: EdgeInsets.only(top: 16.0, left: 12.0),
-                      width: Sizes.parentWidth(context) * 0.9 ,
-                      height: Sizes.parentWidth(context) * 0.9*0.625,
+                      width: Sizes.parentWidth(context) * 0.75 ,
+                      height: Sizes.parentWidth(context) * 0.75*0.625,
                       child: MySvg.logoOmkaAdd,
                     ),
                   ),
                   Positioned(
-                    bottom: -4,
-                    left: Sizes.parentWidth(context) * 0.9 * 0.2,
-                    child: getCardNumFunctions(),
+                    bottom: 8,
+                    left: Sizes.parentWidth(context) * 0.9 * 0.16,
+                    child: cardNum!= null ? Text(
+                      '000 ${cardNum.toString().substring(0,3)} ${cardNum.toString().substring(3,6)}',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold
+                      ),
+                    )
+                    : Center(),
                   ),
                   cardNum != null ? Positioned(
                     right: 0.0,
                     bottom: 0.0,
                     child: Container(
-                      height: Sizes.parentWidth(context) * 0.9 * 0.625 * 0.18,
-                      width: Sizes.parentWidth(context) * 0.9 * 0.5,
+                      height: Sizes.parentWidth(context) * 0.75 * 0.625 * 0.18,
+                      width: Sizes.parentWidth(context) * 0.75 * 0.5,
                       decoration: BoxDecoration(
                         color: color,
                         borderRadius: BorderRadius.only(
@@ -305,7 +355,7 @@ class _AddCardScreenState extends State<AddCardScreen>{
           ?
           Center(
             child: Padding(
-              padding: EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.only(bottom: 32),
               child: FloatingActionButton(
                 backgroundColor: MyColors.red,
                 child: Icon(Icons.refresh, color: Colors.white,),
@@ -319,9 +369,18 @@ class _AddCardScreenState extends State<AddCardScreen>{
             ),
           )
           : 
-          Center(),
+          Center(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 32),
+              child: scanButton(),
+            ),
+          )
+          //Spacer()
         ],
-      )
+      ),
+          )
+        ),
+      ),
     );
   }
 }

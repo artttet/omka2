@@ -20,7 +20,7 @@ class MainScreen extends StatefulWidget{
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
   OmkaCard _card;
 
-  bool isGreyBackground, isBuildetCard, isListActivated;
+  bool isGreyBackground, isBuildetCard, isListActivated, isNotification;
 
   loadData() async{
     MyDataBase.updateCards(SharedPrefs.getPrefs().getInt(PrefsKey.cardNumber)).then((_) =>{
@@ -41,7 +41,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
     isGreyBackground = false;
     isBuildetCard = false;
     isListActivated = false;
+    isNotification = SharedPrefs.getPrefs().getBool(PrefsKey.isNotification);
     loadData();
+    if(isNotification == null)WidgetsBinding.instance.addPostFrameCallback((_) => showOnOffNotification(context));
   }
   
   activateListCards(){
@@ -83,6 +85,63 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
     });
     }
 
+  showOnOffNotification(BuildContext context){
+    
+    if(CheckDevice.isIos()){
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context){
+          return CupertinoAlertDialog(
+            title: Text('Хотите включить уведомления?', style: TextStyle(color: MyColors.red),),
+            content: Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text('Включите уведомления, чтобы сразу узнавать об обновлении баланса на вашей карте.', style: TextStyle(color: MyColors.red),),
+            ),
+            actions: <Widget>[
+              CupertinoButton(
+                onPressed: (){
+                  //SharedPrefs.getPrefs().setBool(PrefsKey.isNotification, false);
+                  Navigator.of(context).pop();
+                },
+                child: Text('Не включать', style: TextStyle(color: MyColors.red),),
+              ),
+              CupertinoButton(
+                onPressed: (){
+                  //SharedPrefs.getPrefs().setBool(PrefsKey.isNotification, true);
+                },
+                child: Text('Включить', style: TextStyle(color: MyColors.red, fontWeight: FontWeight.bold),),
+              )
+            ],
+          );
+        }
+      );
+    }else{
+      showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: Text('Хотите включить уведомления?', style: TextStyle(color: MyColors.red),),
+            content: Text('Включите уведомления, чтобы сразу узнавать об обновлении баланса на вашей карте.', style: TextStyle(color: MyColors.red),),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: (){
+                  Navigator.of(context).pop();
+                },
+                child: Text('Не включать', style: TextStyle(color: MyColors.red),),
+              ),
+              FlatButton(
+                onPressed: (){
+
+                },
+                child: Text('Включить', style: TextStyle(color: MyColors.red, fontWeight: FontWeight.bold),),
+              )
+            ],
+          );
+        }
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     String _cardName;
@@ -102,6 +161,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin{
       _cardBalance = _card.balance;
       _cardHistory = _card.history.split(': ');
       _cardHistory[0] = _cardHistory[0].replaceFirst('д', 'Д');
+      //if(SharedPrefs.getPrefs().getBool(PrefsKey.onOffNotification) == null) showOnOffNotification(context);
     }
     
     return Scaffold(

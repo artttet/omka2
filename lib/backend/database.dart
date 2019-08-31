@@ -81,7 +81,7 @@ class MyDataBase{
 
   static updateCards(int number) async{
     print('number ------ $number');
-    var url = "http://8360aea6.ngrok.io/index.php?num=$number";
+    var url = "http://192.168.43.12/index.php?num=$number";
     final response = await http.get(url);
     if(response.statusCode == 200){
       List<String> body = response.body.split(', ');

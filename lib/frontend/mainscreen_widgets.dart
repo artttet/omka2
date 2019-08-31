@@ -93,16 +93,17 @@ class ListCardsWidgetState extends State<ListCardsWidget> with SingleTickerProvi
         
         return CheckDevice.isIos()
           ? CupertinoAlertDialog(
-            title: Text('Вы хотите удалить карту?'),
+            title: Text('Вы действительно хотите удалить карту?', style: TextStyle(color: MyColors.red),),
+            
             actions: <Widget>[
               CupertinoButton(
-                child: Text('Отменить', style: TextStyle(color: Colors.black)),
+                child: Text('Отменить', style: TextStyle(color: MyColors.red)),
                 onPressed: (){
                   Navigator.of(context).pop();
                 },
               ),
               CupertinoButton(
-                child: Text('Удалить'),
+                child: Text('Удалить', style: TextStyle(color: MyColors.red, fontWeight: FontWeight.bold),),
                 onPressed: (){
                   delete();
                 },

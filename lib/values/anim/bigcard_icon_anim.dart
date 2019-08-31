@@ -6,6 +6,8 @@ import 'package:omka2/values/sizes.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
+
+
 class BigCardAnim extends StatefulWidget{
   @override
   State<StatefulWidget> createState() { 

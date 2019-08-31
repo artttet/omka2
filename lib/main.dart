@@ -78,7 +78,7 @@ _firstRun() async{
     prefs.setInt(PrefsKey.currentListCardIndex, -1);
     prefs.setBool(PrefsKey.isAdvice, true);
     prefs.setBool(PrefsKey.needUpdate, false);
-
+    prefs.setBool(PrefsKey.onOffNotification, true);
     MyDataBase.createDB();
     
   }
